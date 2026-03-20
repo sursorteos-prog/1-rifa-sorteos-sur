@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteos del Sur</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--rojo:#C0392B;--dorado:#F5C518;--dorado2:#E8A200;--negro:#0D0D0D;--azul:#1A2A6C}
+body{background:var(--negro);font-family:'Nunito',sans-serif;min-height:100vh}
+#header{background:linear-gradient(180deg,#1A2A6C 0%,#B21F1F 50%,#E8650A 100%);padding:16px 16px 14px;text-align:center;border-bottom:4px solid var(--dorado);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(245,197,24,0.18) 0%,transparent 70%)}
+#header::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(245,197,24,0.04) 12px,rgba(245,197,24,0.04) 24px)}
+#header-img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.35;display:none}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--dorado);letter-spacing:4px;text-shadow:3px 3px 0 #000;position:relative;z-index:1;line-height:1}
+.logo-del{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;background:var(--rojo);display:inline-block;padding:1px 18px;border-radius:3px;letter-spacing:6px;margin:2px 0;position:relative;z-index:1}
+.logo-sur{font-family:'Bebas Neue',sans-serif;font-size:42px;color:#fff;letter-spacing:6px;text-shadow:3px 3px 0 #000;position:relative;z-index:1;line-height:1}
+/* PRECIO BADGE */
+.precio-badge{display:inline-block;margin-top:8px;background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:var(--negro);font-weight:900;font-size:13px;padding:4px 20px;border-radius:20px;position:relative;z-index:1;border:2px solid #fff;letter-spacing:1px}
+/* PAQUETES */
+#paquetes{display:flex;gap:6px;margin-top:10px;position:relative;z-index:1;flex-wrap:wrap;justify-content:center}
+.paquete{background:rgba(0,0,0,0.45);border:1px solid rgba(245,197,24,0.4);border-radius:10px;padding:6px 12px;text-align:center;min-width:70px}
+.paq-cantidad{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:1}
+.paq-label{font-size:9px;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase}
+.paq-precio{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--dorado);line-height:1;margin-top:2px}
+
+#controls{padding:12px 16px;background:linear-gradient(90deg,#111,#1a1400,#111);display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #2a2000}
+.btn-filter{flex:1;padding:11px 8px;border:2px solid transparent;border-radius:10px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:all 0.2s;min-width:80px;text-transform:uppercase}
+.btn-filter.active{transform:scale(1.04);box-shadow:0 3px 12px rgba(245,197,24,0.4)}
+#btn-todos{background:#1A2A6C;color:#fff;border-color:#2a3a8c}
+#btn-todos.active{background:#243aaa;border-color:var(--dorado)}
+#btn-disponibles{background:#145A32;color:#2ECC71;border-color:#1E8449}
+#btn-disponibles.active{background:#1E8449;border-color:#2ECC71;color:#fff}
+#buscar-wrap{padding:10px 16px 12px;background:linear-gradient(90deg,#111,#1a1400,#111)}
+#buscar{width:100%;padding:10px 14px;border-radius:10px;border:2px solid #2a2000;background:#1a1200;color:var(--dorado);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700}
+#buscar::placeholder{color:#554400}
+#buscar:focus{outline:none;border-color:var(--dorado)}
+#tablero{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:5px;padding:12px;background:var(--negro)}
+.ticket{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;transition:all 0.15s;user-select:none}
+.ticket.disponible{background:#0D2B1A;border-color:#1E8449;color:#2ECC71}
+.ticket.vendido{background:#1a0800;border-color:#3a1500;color:#554433;text-decoration:line-through;opacity:0.45;pointer-events:none}
+.ticket.seleccionado{background:linear-gradient(135deg,#1A2A6C,#243aaa);border-color:var(--dorado);color:var(--dorado);box-shadow:0 0 10px rgba(245,197,24,0.4)}
+.ticket-num{font-family:'Bebas Neue',sans-serif;font-size:17px;line-height:1}
+.ticket-ico{font-size:7px;margin-top:1px;font-weight:800}
+#paginacion{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px 16px;background:var(--negro);flex-wrap:wrap}
+.btn-pag{padding:8px 14px;border-radius:8px;border:2px solid var(--dorado2);background:#1a1200;color:var(--dorado);font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:all 0.2s}
+.btn-pag:hover{background:var(--dorado2);color:#000}
+.btn-pag:disabled{opacity:0.3;cursor:default}
+#pag-info{color:#888;font-size:12px;font-weight:700;letter-spacing:1px}
+#carrito-bar{position:sticky;bottom:0;left:0;right:0;background:linear-gradient(90deg,#1A2A6C,#0D1B4A);border-top:3px solid var(--dorado);padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:8px;z-index:50;flex-wrap:wrap}
+#carrito-bar.show{display:flex}
+#carrito-info{color:#fff;font-size:13px;font-weight:700}
+#carrito-info span{color:var(--dorado);font-size:16px}
+#btn-ver-carrito{background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:#000;border:none;border-radius:10px;padding:10px 18px;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;cursor:pointer}
+#modal-overlay,#carrito-overlay,#datos-overlay,#exito-overlay,#panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+#modal-overlay.show,#carrito-overlay.show,#datos-overlay.show,#exito-overlay.show,#panel-overlay.show{display:flex}
+#modal{background:linear-gradient(160deg,#1A2A6C 0%,#0D0D0D 60%);border:3px solid var(--dorado);border-radius:18px;padding:24px;text-align:center;max-width:300px;width:100%;box-shadow:0 0 50px rgba(245,197,24,0.35)}
+.modal-num{font-family:'Bebas Neue',sans-serif;font-size:76px;color:var(--dorado);line-height:1}
+.modal-status{font-size:12px;font-weight:800;padding:4px 18px;border-radius:20px;margin:8px auto;display:inline-block;letter-spacing:1px;text-transform:uppercase}
+.modal-status.disponible{background:#0D2B1A;color:#2ECC71;border:1px solid #1E8449}
+.modal-status.seleccionado{background:#1A2A6C;color:var(--dorado);border:1px solid var(--dorado)}
+.modal-status.vendido{background:#2C0A00;color:#E74C3C;border:1px solid #8B0000}
+.modal-acciones{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.mac-btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.15s}
+.mac-btn:active{transform:scale(0.97)}
+#btn-seleccionar{background:linear-gradient(135deg,#1E8449,#145A32);color:#fff}
+#btn-quitar{background:linear-gradient(135deg,#555,#333);color:#fff}
+#btn-pagar{background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:#000}
+#btn-seguir{background:#1a1a1a;color:#888;border:1px solid #333}
+#carrito-modal{background:#0D0D0D;border:3px solid var(--dorado);border-radius:18px;padding:20px;max-width:340px;width:100%;max-height:80vh;overflow-y:auto}
+#carrito-modal h2{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--dorado);letter-spacing:2px;margin-bottom:12px;text-align:center}
+#lista-carrito{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:40px}
+.chip-num{background:#1A2A6C;border:1px solid var(--dorado);color:var(--dorado);font-family:'Bebas Neue',sans-serif;font-size:16px;padding:4px 10px;border-radius:8px;cursor:pointer;position:relative}
+.chip-num::after{content:'✕';position:absolute;top:-6px;right:-6px;background:var(--rojo);color:#fff;font-size:8px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:sans-serif}
+#carrito-total{background:#1a1200;border:2px solid var(--dorado2);border-radius:12px;padding:14px;text-align:center;margin-bottom:14px}
+#carrito-total .monto{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--dorado);line-height:1}
+#carrito-total .etiqueta{color:#888;font-size:12px;letter-spacing:1px}
+.carrito-btns{display:flex;gap:8px}
+.carrito-btns button{flex:1;padding:12px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer}
+#btn-pagar-carrito{background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:#000}
+#btn-cerrar-carrito{background:#222;color:#888;border:1px solid #333}
+#datos-modal{background:#0D0D0D;border:3px solid var(--dorado);border-radius:18px;padding:22px;max-width:340px;width:100%;max-height:90vh;overflow-y:auto}
+#datos-modal h2{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--dorado);letter-spacing:2px;margin-bottom:4px;text-align:center}
+#datos-modal p{color:#888;font-size:12px;text-align:center;margin-bottom:16px}
+.campo{margin-bottom:14px}
+.campo label{display:block;color:var(--dorado);font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.campo input,.campo select{width:100%;padding:12px 14px;border-radius:10px;border:2px solid #2a2000;background:#1a1200;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;outline:none}
+.campo input:focus,.campo select:focus{border-color:var(--dorado)}
+.campo select option{background:#1a1200;color:#fff}
+#btn-enviar-wa{width:100%;padding:14px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;cursor:pointer;margin-top:4px;margin-bottom:8px}
+#btn-cancelar-datos{width:100%;padding:10px;background:#1a1a1a;color:#888;border:1px solid #333;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+#exito-modal{background:#0D0D0D;border:3px solid #25D366;border-radius:18px;padding:28px;max-width:300px;width:100%;text-align:center}
+.exito-icono{font-size:48px;margin-bottom:8px}
+#exito-modal h2{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#25D366;letter-spacing:2px;margin-bottom:8px}
+#exito-modal p{color:#888;font-size:13px;line-height:1.6;margin-bottom:16px}
+#btn-exito-ok{width:100%;padding:13px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer}
+/* PANEL */
+#panel-modal{background:#0D0D0D;border:3px solid var(--dorado);border-radius:18px;padding:0;max-width:390px;width:100%;max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
+#panel-header{background:linear-gradient(90deg,#1A2A6C,#0D1B4A);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--dorado)}
+#panel-header h2{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--dorado);letter-spacing:2px}
+#btn-cerrar-panel{background:none;border:none;color:#888;font-size:22px;cursor:pointer}
+#panel-tabs{display:flex;background:#111;border-bottom:1px solid #222;overflow-x:auto}
+.ptab{flex:1;min-width:55px;padding:10px 4px;border:none;background:none;color:#666;font-family:'Nunito',sans-serif;font-weight:800;font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:0.3px;transition:all 0.2s;text-align:center;border-bottom:2px solid transparent;white-space:nowrap}
+.ptab.active{color:var(--dorado);border-bottom:2px solid var(--dorado)}
+#panel-body{padding:16px;overflow-y:auto;flex:1}
+.panel-section{display:none}
+.panel-section.active{display:block}
+.panel-campo{margin-bottom:14px}
+.panel-campo label{display:block;color:var(--dorado);font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.panel-campo input,.panel-campo select{width:100%;padding:10px 12px;border-radius:8px;border:2px solid #2a2000;background:#1a1200;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;outline:none}
+.panel-campo input:focus{border-color:var(--dorado)}
+.panel-btn{width:100%;padding:12px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;margin-bottom:8px;transition:all 0.2s}
+.panel-btn.guardar{background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:#000}
+.panel-btn.peligro{background:#1a0800;color:#E74C3C;border:1px solid #8B0000}
+.panel-btn.verde{background:linear-gradient(135deg,#1E8449,#145A32);color:#fff}
+#zona-upload{border:2px dashed #2a2000;border-radius:10px;padding:20px;text-align:center;cursor:pointer;margin-bottom:12px;background:#0d0a00}
+#zona-upload:hover{border-color:var(--dorado);background:#1a1200}
+#zona-upload p{color:#888;font-size:12px;margin-top:6px}
+#zona-upload .ico{font-size:28px}
+#preview-img{width:100%;border-radius:8px;margin-bottom:10px;display:none;max-height:120px;object-fit:cover}
+#input-img{display:none}
+#resumen-panel{display:flex;gap:6px;margin-bottom:14px}
+.res-card{flex:1;background:#111;border:1px solid #222;border-radius:8px;padding:8px;text-align:center}
+.res-num{font-family:'Bebas Neue',sans-serif;font-size:22px}
+.res-lbl{font-size:9px;color:#666;letter-spacing:1px;text-transform:uppercase}
+#admin-buscar-wrap{display:flex;gap:8px;margin-bottom:14px}
+#admin-buscar{flex:1;padding:10px 12px;border-radius:8px;border:2px solid #2a2000;background:#1a1200;color:var(--dorado);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none}
+#admin-buscar:focus{border-color:var(--dorado)}
+#btn-admin-buscar{padding:10px 16px;border-radius:8px;border:none;background:var(--dorado);color:#000;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer}
+#resultado-boleto{display:none;background:#111;border:2px solid #2a2000;border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
+#res-num-grande{font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--dorado);line-height:1}
+#res-estado-badge{font-size:12px;font-weight:800;padding:4px 18px;border-radius:20px;margin:8px auto;display:inline-block;letter-spacing:1px;text-transform:uppercase}
+#res-estado-badge.disponible{background:#0D2B1A;color:#2ECC71;border:1px solid #1E8449}
+#res-estado-badge.vendido{background:#2C0A00;color:#E74C3C;border:1px solid #8B0000}
+#res-estado-badge.seleccionado{background:#1A2A6C;color:var(--dorado);border:1px solid var(--dorado)}
+.acciones-admin{display:flex;gap:8px;margin-top:10px}
+.acciones-admin button{flex:1;padding:11px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:all 0.15s}
+.acciones-admin button:active{transform:scale(0.97)}
+#btn-marcar-pagado{background:linear-gradient(135deg,#E74C3C,#8B0000);color:#fff}
+#btn-marcar-libre{background:linear-gradient(135deg,#1E8449,#145A32);color:#fff}
+#admin-no-encontrado{display:none;text-align:center;color:#E74C3C;font-size:13px;padding:12px;background:#1a0800;border-radius:8px;margin-bottom:12px}
+#tabla-vendidos{width:100%;border-collapse:collapse;font-size:12px}
+#tabla-vendidos th{color:var(--dorado);font-weight:800;text-align:left;padding:6px 8px;border-bottom:1px solid #2a2000;font-size:11px}
+#tabla-vendidos td{color:#aaa;padding:6px 8px;border-bottom:1px solid #1a1a1a}
+#pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:300;padding:16px}
+#pin-modal{background:#0D0D0D;border:3px solid var(--dorado);border-radius:18px;padding:28px;max-width:280px;width:100%;text-align:center}
+#pin-modal h2{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--dorado);letter-spacing:2px;margin-bottom:8px}
+#pin-modal p{color:#888;font-size:12px;margin-bottom:16px}
+#inp-pin{width:100%;padding:14px;border-radius:10px;border:2px solid #2a2000;background:#1a1200;color:var(--dorado);font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:8px;text-align:center;outline:none;margin-bottom:10px}
+#inp-pin:focus{border-color:var(--dorado)}
+#pin-error{color:#E74C3C;font-size:12px;margin-bottom:8px;display:none}
+.pin-btn{width:100%;padding:12px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer;margin-bottom:8px}
+#no-results{text-align:center;color:#aaa;font-size:14px;padding:40px;display:none}
+#aviso-boletos{background:#1a1200;border:1px solid var(--dorado2);border-radius:8px;padding:10px 12px;margin-top:6px;font-size:11px;color:#aaa;line-height:1.5}
+#aviso-boletos strong{color:var(--dorado)}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <img id="header-img" src="" alt="">
+  <div class="logo-text" id="txt-nombre1">SORTEOS</div>
+  <div class="logo-del">DEL</div>
+  <div class="logo-sur" id="txt-nombre2">SUR</div>
+  <div class="precio-badge">🎟 <span id="txt-precio-unit">$20</span> por boleto</div>
+
+  <!-- PAQUETES -->
+  <div id="paquetes">
+    <div class="paquete">
+      <div class="paq-cantidad">3</div>
+      <div class="paq-label">boletos</div>
+      <div class="paq-precio" id="paq-3">$60</div>
+    </div>
+    <div class="paquete">
+      <div class="paq-cantidad">9</div>
+      <div class="paq-label">boletos</div>
+      <div class="paq-precio" id="paq-9">$180</div>
+    </div>
+    <div class="paquete">
+      <div class="paq-cantidad">12</div>
+      <div class="paq-label">boletos</div>
+      <div class="paq-precio" id="paq-12">$240</div>
+    </div>
+  </div>
+</div>
+
+<div id="controls">
+  <button class="btn-filter active" id="btn-todos" onclick="clickSecreto('todos');setFiltro('todos')">Tablero completo</button>
+  <button class="btn-filter" id="btn-disponibles" onclick="clickSecreto('disponibles');setFiltro('disponibles')">Disponibles</button>
+</div>
+<div id="buscar-wrap">
+  <input id="buscar" type="number" placeholder="Buscar número..." oninput="onBuscar(this.value)" min="1">
+</div>
+<div id="tablero"></div>
+<div id="no-results">No se encontró el número buscado</div>
+<div id="paginacion">
+  <button class="btn-pag" id="btn-prev" onclick="cambiarPag(-1)">&#8592; Anterior</button>
+  <span id="pag-info">Página 1 de 7</span>
+  <button class="btn-pag" id="btn-next" onclick="cambiarPag(1)">Siguiente &#8594;</button>
+</div>
+<div id="carrito-bar">
+  <div id="carrito-info">🎟 <span id="c-count">0</span> boletos &nbsp;|&nbsp; $<span id="c-total">0</span></div>
+  <button id="btn-ver-carrito" onclick="abrirCarrito()">Ver mi selección ▶</button>
+</div>
+
+<!-- Modal boleto -->
+<div id="modal-overlay" onclick="cerrarModal(event)">
+  <div id="modal">
+    <div style="font-size:10px;color:#888;letter-spacing:3px;margin-bottom:2px">BOLETO</div>
+    <div class="modal-num" id="modal-num">000</div>
+    <div class="modal-status" id="modal-status">Disponible</div>
+    <div class="modal-acciones">
+      <button class="mac-btn" id="btn-seleccionar" onclick="seleccionarTicket()">+ Seleccionar</button>
+      <button class="mac-btn" id="btn-quitar" onclick="quitarTicket()">- Quitar de selección</button>
+      <button class="mac-btn" id="btn-pagar" onclick="pagarEste()">💳 Pagar</button>
+      <button class="mac-btn" id="btn-seguir" onclick="cerrarModal()">Seguir buscando →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal carrito -->
+<div id="carrito-overlay" onclick="cerrarCarrito(event)">
+  <div id="carrito-modal">
+    <h2>🎟 MI SELECCIÓN</h2>
+    <div id="lista-carrito"></div>
+    <div id="carrito-total">
+      <div class="etiqueta">TOTAL A PAGAR</div>
+      <div class="monto" id="ct-monto">$0</div>
+      <div style="color:#888;font-size:11px;margin-top:4px" id="ct-detalle"></div>
+    </div>
+    <div class="carrito-btns">
+      <button id="btn-pagar-carrito" onclick="irADatos()">💳 Pagar todo</button>
+      <button id="btn-cerrar-carrito" onclick="cerrarCarrito()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal datos -->
+<div id="datos-overlay">
+  <div id="datos-modal">
+    <h2>TUS DATOS</h2>
+    <p>Completa tu información para apartar tus boletos</p>
+    <div class="campo"><label>Nombre completo</label><input type="text" id="inp-nombre" placeholder="Ej. María López García"></div>
+    <div class="campo"><label>Número de celular</label><input type="tel" id="inp-cel" placeholder="10 dígitos con lada" maxlength="10"></div>
+    <div class="campo">
+      <label>Estado</label>
+      <select id="inp-estado">
+        <option value="">Selecciona tu estado</option>
+        <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option><option>Campeche</option><option>Chiapas</option><option>Chihuahua</option><option>Ciudad de México</option><option>Coahuila</option><option>Colima</option><option>Durango</option><option>Estado de México</option><option>Guanajuato</option><option>Guerrero</option><option>Hidalgo</option><option>Jalisco</option><option>Michoacán</option><option>Morelos</option><option>Nayarit</option><option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option><option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option><option>Sinaloa</option><option>Sonora</option><option>Tabasco</option><option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option><option>Yucatán</option><option>Zacatecas</option>
+      </select>
+    </div>
+    <button id="btn-enviar-wa" onclick="enviarWhatsApp()">📲 Enviar por WhatsApp</button>
+    <button id="btn-cancelar-datos" onclick="cerrarDatos()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Éxito -->
+<div id="exito-overlay">
+  <div id="exito-modal">
+    <div class="exito-icono">🎉</div>
+    <h2>¡LISTO!</h2>
+    <p>Tu mensaje fue enviado. Recuerda que tus boletos están apartados por <strong style="color:var(--dorado)">3 horas</strong>. ¡Realiza tu pago a tiempo!</p>
+    <button id="btn-exito-ok" onclick="cerrarExito()">Entendido</button>
+  </div>
+</div>
+
+<!-- PIN -->
+<div id="pin-overlay">
+  <div id="pin-modal">
+    <h2>🔐 PANEL</h2>
+    <p>Ingresa tu contraseña de administrador</p>
+    <div id="pin-error">Contraseña incorrecta ❌</div>
+    <input type="password" id="inp-pin" placeholder="••••" maxlength="6">
+    <button class="pin-btn" style="background:linear-gradient(135deg,var(--dorado),var(--dorado2));color:#000" onclick="verificarPin()">Entrar</button>
+    <button class="pin-btn" style="background:#1a1a1a;color:#888;border:1px solid #333" onclick="cerrarPin()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Panel de control -->
+<div id="panel-overlay">
+  <div id="panel-modal">
+    <div id="panel-header">
+      <h2>⚙️ PANEL DE CONTROL</h2>
+      <button id="btn-cerrar-panel" onclick="cerrarPanel()">✕</button>
+    </div>
+    <div id="panel-tabs">
+      <button class="ptab active" onclick="cambiarTab('imagen')">🖼 Imagen</button>
+      <button class="ptab" onclick="cambiarTab('rifa')">🎟 Rifa</button>
+      <button class="ptab" onclick="cambiarTab('pago')">💳 Pago</button>
+      <button class="ptab" onclick="cambiarTab('boletos')">🔍 Boletos</button>
+      <button class="ptab" onclick="cambiarTab('ventas')">📊 Ventas</button>
+    </div>
+    <div id="panel-body">
+
+      <!-- IMAGEN -->
+      <div class="panel-section active" id="tab-imagen">
+        <div class="panel-campo">
+          <label>Imagen del encabezado</label>
+          <div id="zona-upload" onclick="document.getElementById('input-img').click()">
+            <div class="ico">🖼</div>
+            <p>Toca aquí para elegir una imagen de tu galería</p>
+          </div>
+          <img id="preview-img" src="" alt="">
+          <input type="file" id="input-img" accept="image/*" onchange="cargarImagen(event)">
+        </div>
+        <button class="panel-btn guardar" onclick="aplicarImagen()">✓ Aplicar imagen</button>
+        <button class="panel-btn peligro" onclick="quitarImagen()">✕ Quitar imagen</button>
+      </div>
+
+      <!-- RIFA -->
+      <div class="panel-section" id="tab-rifa">
+        <div class="panel-campo"><label>Nombre línea 1</label><input type="text" id="p-n1" placeholder="SORTEOS"></div>
+        <div class="panel-campo"><label>Nombre línea 2</label><input type="text" id="p-n2" placeholder="SUR"></div>
+        <div class="panel-campo">
+          <label>Precio por boleto ($)</label>
+          <input type="number" id="p-precio" placeholder="20" min="1">
+          <div style="margin-top:8px;background:#0d0a00;border:1px solid #2a2000;border-radius:8px;padding:10px">
+            <div style="color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Vista previa de paquetes:</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <div style="background:#111;border:1px solid #2a2000;border-radius:6px;padding:6px 10px;text-align:center;flex:1">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff">3 boletos</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--dorado)" id="prev-3">$60</div>
+              </div>
+              <div style="background:#111;border:1px solid #2a2000;border-radius:6px;padding:6px 10px;text-align:center;flex:1">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff">9 boletos</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--dorado)" id="prev-9">$180</div>
+              </div>
+              <div style="background:#111;border:1px solid #2a2000;border-radius:6px;padding:6px 10px;text-align:center;flex:1">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff">12 boletos</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--dorado)" id="prev-12">$240</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-campo">
+          <label>Total de boletos</label>
+          <input type="number" id="p-boletos" placeholder="700" min="1" max="9999">
+          <div id="aviso-boletos"><strong>⚠️ Importante:</strong> Cambiar este número reinicia el tablero. Los boletos vendidos se perderán.</div>
+        </div>
+        <button class="panel-btn guardar" onclick="aplicarRifa()">✓ Guardar cambios</button>
+      </div>
+
+      <!-- PAGO -->
+      <div class="panel-section" id="tab-pago">
+        <div class="panel-campo"><label>WhatsApp (con lada 52)</label><input type="tel" id="p-wa" placeholder="522285978004"></div>
+        <div class="panel-campo"><label>Banco</label><input type="text" id="p-banco" placeholder="BBVA"></div>
+        <div class="panel-campo"><label>Titular</label><input type="text" id="p-titular" placeholder="Jose Garcia"></div>
+        <div class="panel-campo"><label>Número de cuenta</label><input type="text" id="p-cuenta" placeholder="5204160401706093"></div>
+        <div class="panel-campo"><label>CLABE interbancaria</label><input type="text" id="p-clabe" placeholder="002840701219952024"></div>
+        <button class="panel-btn guardar" onclick="aplicarPago()">✓ Guardar datos de pago</button>
+      </div>
+
+      <!-- BOLETOS -->
+      <div class="panel-section" id="tab-boletos">
+        <p style="color:#888;font-size:12px;margin-bottom:12px">Busca un boleto para ver su estado y cambiarlo manualmente.</p>
+        <div id="admin-buscar-wrap">
+          <input type="number" id="admin-buscar" placeholder="Número de boleto...">
+          <button id="btn-admin-buscar" onclick="adminBuscar()">Buscar</button>
+        </div>
+        <div id="admin-no-encontrado">❌ Número no encontrado</div>
+        <div id="resultado-boleto">
+          <div style="font-size:10px;color:#888;letter-spacing:2px;margin-bottom:4px">BOLETO</div>
+          <div id="res-num-grande">000</div>
+          <div id="res-estado-badge" class="disponible">Disponible</div>
+          <div class="acciones-admin">
+            <button id="btn-marcar-pagado" onclick="adminCambiarEstado('vendido')">✓ Marcar pagado</button>
+            <button id="btn-marcar-libre" onclick="adminCambiarEstado('disponible')">↩ Liberar</button>
+          </div>
+        </div>
+        <div style="margin-top:16px;border-top:1px solid #222;padding-top:14px">
+          <p style="color:#888;font-size:11px;margin-bottom:10px;letter-spacing:0.5px;text-transform:uppercase;font-weight:800">O filtra por estado:</p>
+          <div style="display:flex;gap:8px">
+            <button class="panel-btn guardar" style="margin-bottom:0;flex:1;padding:10px;font-size:11px" onclick="filtrarAdminLista('vendido')">Ver vendidos</button>
+            <button class="panel-btn verde" style="margin-bottom:0;flex:1;padding:10px;font-size:11px" onclick="filtrarAdminLista('disponible')">Ver disponibles</button>
+          </div>
+          <div id="lista-admin" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- VENTAS -->
+      <div class="panel-section" id="tab-ventas">
+        <div id="resumen-panel">
+          <div class="res-card"><div class="res-num" id="r-disp" style="color:#2ECC71">700</div><div class="res-lbl">Disponibles</div></div>
+          <div class="res-card"><div class="res-num" id="r-vend" style="color:#E74C3C">0</div><div class="res-lbl">Vendidos</div></div>
+          <div class="res-card"><div class="res-num" id="r-rec" style="color:var(--dorado)">$0</div><div class="res-lbl">Recaudado</div></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="tabla-vendidos">
+            <thead><tr><th>#</th><th>Boleto</th><th>Estado</th></tr></thead>
+            <tbody id="tbody-vendidos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let CONFIG={precio:20,wa:'522285978004',banco:'BBVA',titular:'Jose Garcia',cuenta:'5204160401706093',clabe:'002840701219952024',pin:'1234',totalBoletos:700};
+let imagenPendiente=null;
+let adminBoletoBuscado=null;
+
+// Actualizar paquetes en header y preview del panel
+function actualizarPaquetes(precio){
+  document.getElementById('txt-precio-unit').textContent='$'+precio;
+  document.getElementById('paq-3').textContent='$'+(precio*3).toLocaleString();
+  document.getElementById('paq-9').textContent='$'+(precio*9).toLocaleString();
+  document.getElementById('paq-12').textContent='$'+(precio*12).toLocaleString();
+}
+function actualizarPreviewPanel(precio){
+  document.getElementById('prev-3').textContent='$'+(precio*3).toLocaleString();
+  document.getElementById('prev-9').textContent='$'+(precio*9).toLocaleString();
+  document.getElementById('prev-12').textContent='$'+(precio*12).toLocaleString();
+}
+
+// Input precio en panel actualiza preview en tiempo real
+document.getElementById('p-precio').addEventListener('input',function(){
+  const v=parseInt(this.value)||0;
+  if(v>0) actualizarPreviewPanel(v);
+});
+
+// CÓDIGO SECRETO
+let secuencia=[];
+const CLAVE=['todos','todos','todos','disponibles','disponibles','disponibles'];
+let timerSecreto=null;
+function clickSecreto(btn){
+  secuencia.push(btn);
+  if(secuencia.length>6) secuencia.shift();
+  clearTimeout(timerSecreto);
+  timerSecreto=setTimeout(()=>{secuencia=[]},4000);
+  if(secuencia.length===6&&secuencia.join(',')===CLAVE.join(',')){secuencia=[];abrirPinModal()}
+}
+
+const POR_PAGINA=100;
+let totalBoletos=700;
+let todosOrdenados=[],numerosAleatorios=[],estados={};
+
+function inicializarBoletos(total){
+  totalBoletos=total;
+  todosOrdenados=Array.from({length:total},(_,i)=>i+1);
+  numerosAleatorios=Array.from({length:total},(_,i)=>i+1);
+  for(let i=numerosAleatorios.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[numerosAleatorios[i],numerosAleatorios[j]]=[numerosAleatorios[j],numerosAleatorios[i]]}
+  estados={};todosOrdenados.forEach(n=>{estados[n]='disponible'});
+}
+inicializarBoletos(700);
+
+let filtroActivo='todos',paginaActual=1,busqueda='',ticketActual=null,carrito=[],numsParaPagar=[];
+
+function fmt(n){return String(n).padStart(String(totalBoletos).length,'0')}
+function getVisibles(){
+  const base=busqueda?todosOrdenados:numerosAleatorios;
+  return base.filter(n=>{
+    const e=estados[n];
+    if(filtroActivo==='disponibles'&&e!=='disponible'&&e!=='seleccionado') return false;
+    if(busqueda&&String(n)!==busqueda) return false;
+    return true;
+  });
+}
+function render(){
+  const vis=getVisibles();const enB=busqueda.length>0;
+  const tp=Math.max(1,Math.ceil(vis.length/POR_PAGINA));
+  if(paginaActual>tp) paginaActual=tp;
+  const pag=enB?vis:vis.slice((paginaActual-1)*POR_PAGINA,paginaActual*POR_PAGINA);
+  const tab=document.getElementById('tablero');
+  if(!pag.length){tab.innerHTML='';document.getElementById('no-results').style.display='block'}
+  else{document.getElementById('no-results').style.display='none';tab.innerHTML=pag.map(n=>{const e=estados[n];const ico=e==='vendido'?'VENDIDO':e==='seleccionado'?'✓':'';return `<div class="ticket ${e}" onclick="abrirModal(${n})"><div class="ticket-num">${fmt(n)}</div>${ico?`<div class="ticket-ico">${ico}</div>`:''}</div>`;}).join('');}
+  document.getElementById('pag-info').textContent=`Página ${paginaActual} de ${tp}`;
+  document.getElementById('btn-prev').disabled=paginaActual<=1;
+  document.getElementById('btn-next').disabled=paginaActual>=tp;
+  document.getElementById('paginacion').style.display=enB?'none':'flex';
+  document.getElementById('c-count').textContent=carrito.length;
+  document.getElementById('c-total').textContent=(carrito.length*CONFIG.precio).toLocaleString();
+  document.getElementById('carrito-bar').className=carrito.length>0?'show':'';
+}
+function cambiarPag(d){paginaActual+=d;render();window.scrollTo(0,0)}
+function setFiltro(f){filtroActivo=f;paginaActual=1;document.querySelectorAll('.btn-filter').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+f).classList.add('active');render()}
+function onBuscar(v){busqueda=v.trim();paginaActual=1;render()}
+function abrirModal(n){
+  ticketActual=n;const e=estados[n];
+  document.getElementById('modal-num').textContent=fmt(n);
+  const st=document.getElementById('modal-status');st.className='modal-status '+e;
+  st.textContent=e==='disponible'?'Disponible':e==='seleccionado'?'En tu selección':'Vendido';
+  const ec=carrito.includes(n);
+  document.getElementById('btn-seleccionar').style.display=ec?'none':'block';
+  document.getElementById('btn-quitar').style.display=ec?'block':'none';
+  document.getElementById('btn-pagar').style.display=e==='vendido'?'none':'block';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function cerrarModal(e){if(!e||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('show')}
+function seleccionarTicket(){if(!carrito.includes(ticketActual)){carrito.push(ticketActual);estados[ticketActual]='seleccionado'}document.getElementById('modal-overlay').classList.remove('show');render()}
+function quitarTicket(){carrito=carrito.filter(x=>x!==ticketActual);estados[ticketActual]='disponible';document.getElementById('modal-overlay').classList.remove('show');render()}
+function pagarEste(){if(!carrito.includes(ticketActual)){carrito.push(ticketActual);estados[ticketActual]='seleccionado'}document.getElementById('modal-overlay').classList.remove('show');numsParaPagar=[...carrito];abrirDatos()}
+function abrirCarrito(){
+  document.getElementById('lista-carrito').innerHTML=carrito.length?carrito.map(n=>`<div class="chip-num" onclick="quitarDelCarrito(${n})">${fmt(n)}</div>`).join(''):'<div style="color:#555;font-size:13px;width:100%;text-align:center">Sin boletos seleccionados</div>';
+  document.getElementById('ct-monto').textContent='$'+(carrito.length*CONFIG.precio).toLocaleString();
+  document.getElementById('ct-detalle').textContent=carrito.length+' boleto'+(carrito.length!==1?'s':'')+' × $'+CONFIG.precio;
+  document.getElementById('carrito-overlay').classList.add('show');
+}
+function quitarDelCarrito(n){carrito=carrito.filter(x=>x!==n);estados[n]='disponible';render();abrirCarrito()}
+function cerrarCarrito(e){if(!e||e.target===document.getElementById('carrito-overlay'))document.getElementById('carrito-overlay').classList.remove('show')}
+function irADatos(){numsParaPagar=[...carrito];document.getElementById('carrito-overlay').classList.remove('show');abrirDatos()}
+function abrirDatos(){document.getElementById('inp-nombre').value='';document.getElementById('inp-cel').value='';document.getElementById('inp-estado').value='';document.getElementById('datos-overlay').classList.add('show')}
+function cerrarDatos(){document.getElementById('datos-overlay').classList.remove('show')}
+function enviarWhatsApp(){
+  const nombre=document.getElementById('inp-nombre').value.trim();
+  const cel=document.getElementById('inp-cel').value.trim();
+  const estado=document.getElementById('inp-estado').value;
+  if(!nombre){alert('Por favor escribe tu nombre completo');return}
+  if(!cel||cel.length<10){alert('Por favor escribe tu número de celular a 10 dígitos');return}
+  if(!estado){alert('Por favor selecciona tu estado');return}
+  const boletos=numsParaPagar.map(n=>fmt(n)).join(', ');
+  const total=numsParaPagar.length*CONFIG.precio;
+  const msg=`🎟 *SORTEOS DEL SUR* 🎟\n\nHola! Quiero apartar mis boletos 😊\n\n👤 *Nombre:* ${nombre}\n📱 *Celular:* ${cel}\n📍 *Estado:* ${estado}\n\n🎫 *Boletos:* ${boletos}\n💰 *Total a pagar:* $${total.toLocaleString()} MXN\n\n— — — — — — — — — — —\n💳 *DATOS DE PAGO*\n— — — — — — — — — — —\n🏦 *Banco:* ${CONFIG.banco}\n👤 *Titular:* ${CONFIG.titular}\n🔢 *No. de cuenta:* ${CONFIG.cuenta}\n📋 *CLABE:* ${CONFIG.clabe}\n— — — — — — — — — — —\n\n⏳ *IMPORTANTE:* Tus boletos quedan apartados por *3 horas* a partir de este mensaje. Hay muchos participantes interesados, ¡no pierdas tu lugar! 🔥\n\nPor favor envíame tu comprobante de pago para confirmar tus boletos ✅`;
+  numsParaPagar.forEach(n=>{estados[n]='vendido';carrito=carrito.filter(x=>x!==n)});
+  numsParaPagar=[];
+  document.getElementById('datos-overlay').classList.remove('show');
+  document.getElementById('exito-overlay').classList.add('show');
+  setTimeout(()=>{window.open('https://wa.me/'+CONFIG.wa+'?text='+encodeURIComponent(msg),'_blank')},400);
+  render();
+}
+function cerrarExito(){document.getElementById('exito-overlay').classList.remove('show')}
+
+function abrirPinModal(){document.getElementById('inp-pin').value='';document.getElementById('pin-error').style.display='none';document.getElementById('pin-overlay').style.display='flex'}
+function cerrarPin(){document.getElementById('pin-overlay').style.display='none'}
+function verificarPin(){
+  if(document.getElementById('inp-pin').value===CONFIG.pin){cerrarPin();abrirPanel()}
+  else{document.getElementById('pin-error').style.display='block';document.getElementById('inp-pin').value=''}
+}
+document.getElementById('inp-pin').addEventListener('keydown',e=>{if(e.key==='Enter')verificarPin()});
+document.getElementById('admin-buscar').addEventListener('keydown',e=>{if(e.key==='Enter')adminBuscar()});
+
+function abrirPanel(){
+  document.getElementById('p-n1').value=document.getElementById('txt-nombre1').textContent;
+  document.getElementById('p-n2').value=document.getElementById('txt-nombre2').textContent;
+  document.getElementById('p-precio').value=CONFIG.precio;
+  document.getElementById('p-boletos').value=totalBoletos;
+  document.getElementById('p-wa').value=CONFIG.wa;
+  document.getElementById('p-banco').value=CONFIG.banco;
+  document.getElementById('p-titular').value=CONFIG.titular;
+  document.getElementById('p-cuenta').value=CONFIG.cuenta;
+  document.getElementById('p-clabe').value=CONFIG.clabe;
+  actualizarPreviewPanel(CONFIG.precio);
+  document.getElementById('resultado-boleto').style.display='none';
+  document.getElementById('admin-no-encontrado').style.display='none';
+  document.getElementById('admin-buscar').value='';
+  document.getElementById('lista-admin').innerHTML='';
+  cambiarTab('imagen');
+  document.getElementById('panel-overlay').classList.add('show');
+}
+function cerrarPanel(){document.getElementById('panel-overlay').classList.remove('show')}
+function cambiarTab(t){
+  const tabs=['imagen','rifa','pago','boletos','ventas'];
+  document.querySelectorAll('.ptab').forEach((b,i)=>b.classList.toggle('active',tabs[i]===t));
+  document.querySelectorAll('.panel-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='ventas') actualizarVentas();
+}
+function cargarImagen(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{imagenPendiente=ev.target.result;const prev=document.getElementById('preview-img');prev.src=imagenPendiente;prev.style.display='block';document.getElementById('zona-upload').style.display='none';};
+  reader.readAsDataURL(file);
+}
+function aplicarImagen(){
+  if(!imagenPendiente){alert('Primero selecciona una imagen');return}
+  const img=document.getElementById('header-img');img.src=imagenPendiente;img.style.display='block';cerrarPanel();
+}
+function quitarImagen(){
+  document.getElementById('header-img').style.display='none';document.getElementById('header-img').src='';
+  imagenPendiente=null;document.getElementById('preview-img').style.display='none';document.getElementById('zona-upload').style.display='block';
+}
+function aplicarRifa(){
+  const n1=document.getElementById('p-n1').value.trim();
+  const n2=document.getElementById('p-n2').value.trim();
+  const pr=parseInt(document.getElementById('p-precio').value)||20;
+  const nb=parseInt(document.getElementById('p-boletos').value)||700;
+  if(n1) document.getElementById('txt-nombre1').textContent=n1;
+  if(n2) document.getElementById('txt-nombre2').textContent=n2;
+  CONFIG.precio=pr;
+  actualizarPaquetes(pr);
+  if(nb!==totalBoletos){
+    if(confirm(`¿Cambiar a ${nb} boletos? Esto reiniciará el tablero y se perderán los boletos vendidos.`)){
+      carrito=[];numsParaPagar=[];inicializarBoletos(nb);paginaActual=1;
+    }
+  }
+  cerrarPanel();render();
+}
+function aplicarPago(){
+  CONFIG.wa=document.getElementById('p-wa').value.trim()||CONFIG.wa;
+  CONFIG.banco=document.getElementById('p-banco').value.trim()||CONFIG.banco;
+  CONFIG.titular=document.getElementById('p-titular').value.trim()||CONFIG.titular;
+  CONFIG.cuenta=document.getElementById('p-cuenta').value.trim()||CONFIG.cuenta;
+  CONFIG.clabe=document.getElementById('p-clabe').value.trim()||CONFIG.clabe;
+  cerrarPanel();alert('✅ Datos de pago actualizados');
+}
+function adminBuscar(){
+  const val=parseInt(document.getElementById('admin-buscar').value);
+  document.getElementById('admin-no-encontrado').style.display='none';
+  document.getElementById('resultado-boleto').style.display='none';
+  document.getElementById('lista-admin').innerHTML='';
+  if(!val||!estados[val]){document.getElementById('admin-no-encontrado').style.display='block';return}
+  adminBoletoBuscado=val;mostrarResultadoAdmin(val);
+}
+function mostrarResultadoAdmin(n){
+  const e=estados[n];
+  document.getElementById('res-num-grande').textContent=fmt(n);
+  const badge=document.getElementById('res-estado-badge');
+  badge.className='';
+  if(e==='disponible'){badge.className='disponible';badge.textContent='✓ Disponible'}
+  else if(e==='vendido'){badge.className='vendido';badge.textContent='💳 Pagado / Vendido'}
+  else{badge.className='seleccionado';badge.textContent='🔒 Apartado'}
+  document.getElementById('btn-marcar-pagado').style.display=e==='vendido'?'none':'flex';
+  document.getElementById('btn-marcar-libre').style.display=e==='disponible'?'none':'flex';
+  document.getElementById('resultado-boleto').style.display='block';
+}
+function adminCambiarEstado(nuevoEstado){
+  if(!adminBoletoBuscado) return;
+  if(nuevoEstado==='disponible') carrito=carrito.filter(x=>x!==adminBoletoBuscado);
+  estados[adminBoletoBuscado]=nuevoEstado;
+  mostrarResultadoAdmin(adminBoletoBuscado);render();
+}
+function filtrarAdminLista(tipo){
+  const lista=todosOrdenados.filter(n=>estados[n]===tipo);
+  const color=tipo==='vendido'?'#E74C3C':'#2ECC71';
+  const bg=tipo==='vendido'?'#2C0A00':'#0D2B1A';
+  const border=tipo==='vendido'?'#8B0000':'#1E8449';
+  document.getElementById('lista-admin').innerHTML=lista.length
+    ?lista.map(n=>`<div onclick="adminSeleccionar(${n})" style="background:${bg};border:1px solid ${border};color:${color};font-family:'Bebas Neue',sans-serif;font-size:16px;padding:4px 10px;border-radius:8px;cursor:pointer">${fmt(n)}</div>`).join('')
+    :`<div style="color:#555;font-size:13px;padding:8px">Sin boletos en este estado</div>`;
+}
+function adminSeleccionar(n){
+  adminBoletoBuscado=n;document.getElementById('admin-buscar').value=n;
+  mostrarResultadoAdmin(n);document.getElementById('admin-no-encontrado').style.display='none';
+}
+function actualizarVentas(){
+  const vend=Object.values(estados).filter(e=>e==='vendido').length;
+  document.getElementById('r-disp').textContent=totalBoletos-vend;
+  document.getElementById('r-vend').textContent=vend;
+  document.getElementById('r-rec').textContent='$'+(vend*CONFIG.precio).toLocaleString();
+  const vendidos=todosOrdenados.filter(n=>estados[n]==='vendido');
+  document.getElementById('tbody-vendidos').innerHTML=vendidos.length
+    ?vendidos.map((n,i)=>`<tr><td style="color:#555">${i+1}</td><td><strong style="color:#fff">${fmt(n)}</strong></td><td><span style="background:#2C0A00;color:#E74C3C;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;border:1px solid #8B0000">VENDIDO</span></td></tr>`).join('')
+    :`<tr><td colspan="3" style="text-align:center;color:#555;padding:20px">Sin ventas aún</td></tr>`;
+}
+render();
+</script>
+</body>
+</html>
